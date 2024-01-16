@@ -4,10 +4,10 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Debug, Clone, Serialize)]
 pub struct Config {
-    plugins: PluginsConfig,
-    db: DbConfig,
-    sources: SourcesConfig,
-    http: HttpConfig,
+    pub plugins: PluginsConfig,
+    pub db: DbConfig,
+    pub sources: SourcesConfig,
+    pub http: HttpConfig,
 }
 
 #[derive(Deserialize, Debug, Clone, Serialize)]
