@@ -1,11 +1,10 @@
 print("hello from global")
 
-local test = function()
+local function test()
     print("hello from local")
 end
 
--- This function needs to be global because it's recursive.
-print_r = function(t, indent)
+local function print_r(t, indent)
     local indent = indent or ""
     for k, v in pairs(t) do
         io.write(indent, tostring(k))
