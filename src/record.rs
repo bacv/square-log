@@ -1,16 +1,9 @@
-use mlua::{Lua, UserData};
+use mlua::UserData;
 
 #[derive(Debug, Clone)]
-struct DataRecord {
-    data: String,
-    time: String,
+pub struct DataRecord {
+    pub data: String,
+    pub time: String,
 }
 
 impl UserData for DataRecord {}
-
-pub fn process_data_records(_: &Lua, records: Vec<DataRecord>) -> mlua::Result<()> {
-    for record in records {
-        println!("Data: {}, Time: {}", record.data, record.time);
-    }
-    Ok(())
-}
