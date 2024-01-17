@@ -1,2 +1,4 @@
 pub mod config;
-mod record;
+pub mod plugin;
+pub mod record;
+pub mod source;
