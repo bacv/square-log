@@ -14,7 +14,7 @@ pub struct Source {
     pub plugin: String,
 }
 
-pub struct Sources {}
+pub struct Sources;
 
 impl Sources {
     // Function to read sources from a CSV file.

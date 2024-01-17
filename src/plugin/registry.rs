@@ -1,10 +1,10 @@
+use std::{collections::HashMap, fs, sync::Arc};
+
 use color_eyre::eyre::eyre;
 use mlua::{Function, Lua};
-use std::{collections::HashMap, fs};
 
+use super::{api::Api, PluginConfig, LUA_PLUGIN_CALL_FN, RUST_API_GLOBAL_NAME};
 use crate::source::Source;
-
-use super::{api, PluginConfig, API_FETCH_JSON_FN, PLUGIN_CALL_FN};
 
 pub struct PluginRegistry {
     plugins: HashMap<String, Lua>,
@@ -15,6 +15,8 @@ impl PluginRegistry {
         let mut registry = Self {
             plugins: HashMap::new(),
         };
+
+        let api = Arc::new(Api);
 
         for entry in fs::read_dir(config.path)? {
             let path = entry?.path();
@@ -30,8 +32,7 @@ impl PluginRegistry {
                     .to_string();
 
                 lua.load(&script).exec()?;
-                lua.globals()
-                    .set(API_FETCH_JSON_FN, api::fetch_json(&lua)?)?;
+                lua.globals().set(RUST_API_GLOBAL_NAME, api.clone())?;
 
                 registry.plugins.insert(plugin_name, lua);
             }
@@ -44,9 +45,9 @@ impl PluginRegistry {
         let call_fn: Function = self
             .plugins
             .get(&source.plugin)
-            .ok_or_else(|| eyre!(""))?
+            .ok_or_else(|| eyre!("invalid plugin name"))?
             .globals()
-            .get(PLUGIN_CALL_FN)?;
+            .get(LUA_PLUGIN_CALL_FN)?;
 
         call_fn.call_async::<_, ()>(source.address.clone()).await?;
         Ok(())
