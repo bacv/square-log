@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 
 mod api;
 pub mod registry;
+pub mod sheduler;
+mod source;
 
 // Functions expected to be available from lua site to rust.
 const LUA_PLUGIN_CALL_FN: &str = "sqrt_call_fn";

@@ -2,7 +2,10 @@ use std::path::PathBuf;
 
 use clap::Parser;
 use color_eyre::eyre::Result;
-use sqrt_log::{config::Config, plugin::registry::PluginRegistry};
+use sqrt_log::{
+    config::Config,
+    plugin::{registry::PluginRegistry, sheduler::Scheduler},
+};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -16,11 +19,19 @@ async fn main() -> Result<()> {
     let Args { config } = Args::parse();
     let config = serde_yaml::from_reader::<_, Config>(std::fs::File::open(config)?)?;
 
-    // Load plugins
-    let _plugin_registry = PluginRegistry::new(config.plugins)?;
+    // initialize sled database
 
-    // Start the pull loop
-    //let log_puller = LogPuller::init(sources, plugin_registry).start().await?;
+    // Load plugins and sources configs. Maybe pass sled db handle?
+    let plugin_registry = PluginRegistry::new(config.plugins)?;
+
+    let mut scheduler = Scheduler::new(plugin_registry.sources);
+
+    // Start pulling
+    scheduler.spawn().await;
+
+    // Start http api
+
+    // Wait for everything to finish
 
     Ok(())
 }

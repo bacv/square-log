@@ -1,19 +1,15 @@
-use std::{collections::HashMap, fs, path::Path, sync::Arc, time::Duration};
+use std::{fs, path::Path, sync::Arc, time::Duration};
 
 use mlua::{Function, Lua, LuaSerdeExt, Result, Table};
 
-use super::{api::Api, PluginConfig, LUA_SOURCES_FN, LUA_SOURCES_VAR, RUST_API_GLOBAL_NAME};
+use super::{
+    api::Api, source::Source, PluginConfig, LUA_SOURCES_FN, LUA_SOURCES_VAR, RUST_API_GLOBAL_NAME,
+};
 
 const DEFAULT_INTERVAL: Duration = Duration::from_secs(10);
 
-pub struct Source {
-    url: String,
-    interval: Duration,
-    rt: Lua,
-}
-
 pub struct PluginRegistry {
-    sources: HashMap<String, Source>,
+    pub sources: Vec<Source>,
 }
 
 impl PluginRegistry {
@@ -29,7 +25,7 @@ impl PluginRegistry {
             .get(LUA_SOURCES_FN)
             .map_err(|_| mlua::Error::RuntimeError("Failed to get global function".to_string()))?;
 
-        let mut sources = HashMap::new();
+        let mut sources = Vec::new();
         let plugin_list: Table = sources_fn.call(())?;
 
         for plugin in plugin_list.pairs::<mlua::String, mlua::Table>() {
@@ -37,9 +33,11 @@ impl PluginRegistry {
             for source in source_list.pairs::<mlua::Value, mlua::Table>() {
                 let (_, source_table) = source?;
                 let source_rt = Lua::new();
+
                 load_plugin(&source_rt, plugin.to_str()?, &config.directory, &api)?;
                 let source = load_source(source_rt, source_table)?;
-                sources.insert(source.url.clone(), source);
+
+                sources.push(source);
             }
         }
 
@@ -60,10 +58,10 @@ fn load_source(rt: Lua, source_table: Table) -> Result<Source> {
         })?;
 
     // TODO: refactor so that there is no need for state copies between rt instances.
-    let json_str = serde_json::to_string(&source_table).expect("Should serialize to json");
-    rt.globals().set(LUA_SOURCES_VAR, rt.to_value(&json_str)?)?;
+    let json = serde_json::to_value(source_table).expect("Should serialize to JSON");
+    rt.globals().set(LUA_SOURCES_VAR, rt.to_value(&json)?)?;
 
-    let source = Source { url, interval, rt };
+    let source = Source::new(url, interval, rt);
     Ok(source)
 }
 
