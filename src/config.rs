@@ -2,13 +2,12 @@ use std::{net::SocketAddr, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{plugin::PluginConfig, source::SourcesConfig};
+use crate::plugin::PluginConfig;
 
 #[derive(Deserialize, Debug, Clone, Serialize)]
 pub struct Config {
     pub plugins: PluginConfig,
     pub db: DbConfig,
-    pub sources: SourcesConfig,
     pub http: HttpConfig,
 }
 

@@ -17,7 +17,7 @@ local function print_r(t, indent)
     end
 end
 
-sqrt_call_fn = function(uri)
+sqrt_call_fn = function(source)
     test()
-    print_r(sqrt_log:fetch_json(uri))
+    print_r(sqrt_log:fetch_json(source.url))
 end

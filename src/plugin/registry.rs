@@ -1,58 +1,78 @@
-use std::{collections::HashMap, fs, path::PathBuf, sync::Arc};
+use std::{collections::HashMap, fs, path::Path, sync::Arc, time::Duration};
 
-use color_eyre::eyre::eyre;
-use mlua::{Function, Lua, Result};
+use mlua::{Function, Lua, LuaSerdeExt, Result, Table};
 
-use super::{api::Api, PluginConfig, LUA_PLUGIN_CALL_FN, RUST_API_GLOBAL_NAME};
-use crate::source::Source;
+use super::{api::Api, PluginConfig, LUA_SOURCES_FN, LUA_SOURCES_VAR, RUST_API_GLOBAL_NAME};
+
+const DEFAULT_INTERVAL: Duration = Duration::from_secs(10);
+
+pub struct Source {
+    url: String,
+    interval: Duration,
+    rt: Lua,
+}
 
 pub struct PluginRegistry {
-    plugins: HashMap<String, Lua>,
+    sources: HashMap<String, Source>,
 }
 
 impl PluginRegistry {
-    pub fn init(config: PluginConfig) -> Result<Self> {
+    pub fn new(config: PluginConfig) -> Result<Self> {
         let api = Arc::new(Api);
+        let rt = Lua::new();
+        let script = fs::read_to_string(config.sources)?;
+        rt.load(script).exec()?;
 
-        let mut plugins = HashMap::new();
-        for entry in fs::read_dir(config.path)? {
-            let (plugin_name, plugin_source) = load_plugin(entry?.path(), &api)?;
-            plugins.insert(plugin_name, plugin_source);
+        // Retrieve the global function defined in Lua.
+        let sources_fn: Function = rt
+            .globals()
+            .get(LUA_SOURCES_FN)
+            .map_err(|_| mlua::Error::RuntimeError("Failed to get global function".to_string()))?;
+
+        let mut sources = HashMap::new();
+        let plugin_list: Table = sources_fn.call(())?;
+
+        for plugin in plugin_list.pairs::<mlua::String, mlua::Table>() {
+            let (plugin, source_list) = plugin?;
+            for source in source_list.pairs::<mlua::Value, mlua::Table>() {
+                let (_, source_table) = source?;
+                let source_rt = Lua::new();
+                load_plugin(&source_rt, plugin.to_str()?, &config.directory, &api)?;
+                let source = load_source(source_rt, source_table)?;
+                sources.insert(source.url.clone(), source);
+            }
         }
 
-        Ok(Self { plugins })
-    }
-
-    pub async fn call(&self, source: &Source) -> color_eyre::Result<()> {
-        let call_fn: Function = self
-            .plugins
-            .get(&source.plugin)
-            .ok_or_else(|| eyre!("invalid plugin name"))?
-            .globals()
-            .get(LUA_PLUGIN_CALL_FN)?;
-
-        call_fn.call_async::<_, ()>(source.address.clone()).await?;
-        Ok(())
+        Ok(Self { sources })
     }
 }
 
-fn load_plugin(path: PathBuf, api: &Arc<Api>) -> Result<(String, Lua)> {
-    if path.is_file() && path.extension().and_then(|s| s.to_str()) == Some("lua") {
-        let lua = Lua::new();
-        let script = fs::read_to_string(&path)?;
-        let plugin_name = path
-            .file_stem()
-            .and_then(|s| s.to_str())
-            .ok_or_else(|| mlua::Error::RuntimeError("Invalid plugin file name".to_string()))?
-            .to_string();
+fn load_source(rt: Lua, source_table: Table) -> Result<Source> {
+    // Parse mandatory fields of the source definition on lua side.
+    let url: String = source_table
+        .get("url")
+        .map_err(|_| mlua::Error::RuntimeError("Failed to get 'url' from source".to_string()))?;
+    let interval: Duration = source_table
+        .get::<_, String>("interval")
+        .map(|i| humantime::parse_duration(&i).unwrap_or(DEFAULT_INTERVAL))
+        .map_err(|_| {
+            mlua::Error::RuntimeError("Failed to get 'interval' from source".to_string())
+        })?;
 
-        lua.load(&script).exec()?;
-        lua.globals().set(RUST_API_GLOBAL_NAME, api.clone())?;
+    // TODO: refactor so that there is no need for state copies between rt instances.
+    let json_str = serde_json::to_string(&source_table).expect("Should serialize to json");
+    rt.globals().set(LUA_SOURCES_VAR, rt.to_value(&json_str)?)?;
 
-        Ok((plugin_name, lua))
-    } else {
-        Err(mlua::Error::RuntimeError(
-            "File is not a Lua script".to_string(),
-        ))
-    }
+    let source = Source { url, interval, rt };
+    Ok(source)
+}
+
+fn load_plugin(rt: &Lua, name: &str, directory: &Path, api: &Arc<Api>) -> Result<()> {
+    let plugin_path = directory.join(format!("{name}.lua"));
+    let script = fs::read_to_string(plugin_path)?;
+
+    rt.load(&script).exec()?;
+    rt.globals().set(RUST_API_GLOBAL_NAME, api.clone())?;
+
+    Ok(())
 }
