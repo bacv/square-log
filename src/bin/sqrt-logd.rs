@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use clap::Parser;
 use color_eyre::eyre::Result;
-use sqrt_log::{config::Config, plugin::registry::PluginRegistry, source::Sources};
+use sqrt_log::{config::Config, plugin::registry::PluginRegistry};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -17,14 +17,7 @@ async fn main() -> Result<()> {
     let config = serde_yaml::from_reader::<_, Config>(std::fs::File::open(config)?)?;
 
     // Load plugins
-    let plugin_registry = PluginRegistry::init(config.plugins)?;
-
-    // Read sources
-    let sources = Sources::load(config.sources)?;
-
-    for source in sources {
-        plugin_registry.call(&source).await?;
-    }
+    let _plugin_registry = PluginRegistry::new(config.plugins)?;
 
     // Start the pull loop
     //let log_puller = LogPuller::init(sources, plugin_registry).start().await?;

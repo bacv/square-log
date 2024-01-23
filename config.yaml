@@ -1,11 +1,9 @@
 plugins:
-  path: "examples/plugins"
+  directory: "examples/plugins"
+  sources: "examples/sources.lua"
 
 db:
   path: "db"
-
-sources:
-  path: "examples/sources.csv"
 
 http:
   addr: "127.0.0.1:8080"

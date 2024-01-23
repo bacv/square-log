@@ -6,10 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+chrono = "0.4.31"
 clap = { version = "4.4.17", features = ["derive"] }
 color-eyre = "0.6.2"
 csv = "1.3.0"
-mlua = { version = "0.9.4", features = ["lua54", "async", "serialize"] }
+humantime = "2.1.0"
+mlua = { version = "0.9.4", features = ["lua54", "async", "serialize", "macros"] }
 once_cell = "1.19.0"
 reqwest = { version = "0.11.23", features = ["json"] }
 serde = { version = "1.0.195", features = ["serde_derive"] }
