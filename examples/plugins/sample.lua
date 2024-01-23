@@ -18,7 +18,9 @@ local function print_r(t, indent)
 end
 
 sqrt_call_fn = function(source)
-	--print_r(sqrt_log:fetch_json(source.url))
+	-- This returns a lot of items
+	-- print_r(sqrt_log:fetch_json(source.url))
+	local res = sqrt_log:fetch_json(source.url)
 	print_r(source)
 	print()
 end

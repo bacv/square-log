@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 mod api;
 pub mod registry;
-pub mod sheduler;
+pub mod scheduler;
 mod source;
 
 // Functions expected to be available from lua site to rust.

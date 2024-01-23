@@ -9,12 +9,12 @@ local sample_config = {
 local sample_sources = {
 	{
 		url = "https://api.sampleapis.com/wines/reds",
-		interval = "1s",
+		interval = "10s",
 		config = sample_config,
 	},
 	{
 		url = "https://api.sampleapis.com/coffee/hot",
-		interval = "10s",
+		interval = "20s",
 		config = sample_config,
 	}
 }

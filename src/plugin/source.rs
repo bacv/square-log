@@ -45,7 +45,10 @@ impl Source {
             .expect("Call function should be set in lua plugin");
 
         // TODO: handle lua panic;
-        lua_call_fn.call::<_, ()>(lua_source).expect("");
+        lua_call_fn
+            .call_async::<_, ()>(lua_source)
+            .await
+            .expect("TODO: don't panic");
         drop(lua_call_fn);
 
         self.update_next_run();

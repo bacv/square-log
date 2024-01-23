@@ -4,7 +4,7 @@ use clap::Parser;
 use color_eyre::eyre::Result;
 use sqrt_log::{
     config::Config,
-    plugin::{registry::PluginRegistry, sheduler::Scheduler},
+    plugin::{registry::PluginRegistry, scheduler::Scheduler},
 };
 
 #[derive(Parser, Debug)]
