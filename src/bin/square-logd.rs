@@ -2,7 +2,7 @@ use std::{path::PathBuf, sync::Arc, time::Duration};
 
 use clap::Parser;
 use color_eyre::eyre::Result;
-use sqrt_log::{
+use square_log::{
     config::Config,
     db::{mock::MockDatabase, Database},
     plugin::{registry::PluginRegistry, scheduler::Scheduler},

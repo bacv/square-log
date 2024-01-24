@@ -1,5 +1,5 @@
 [package]
-name = "sqrt-log"
+name = "square-log"
 version = "0.1.0"
 edition = "2021"
 

@@ -11,8 +11,8 @@ print("Initializing coffees plugin")
 --     hash = "abc123hash"
 -- }
 
-sqrt_call_fn = function(source)
-    local res = sqrt_log:fetch_json(source.url)
+sq_call_fn = function(source)
+    local res = sq_log:fetch_json(source.url)
     for _, item in ipairs(res) do
         local record = {
             date = os.date("%Y-%m-%d"),
@@ -23,6 +23,6 @@ sqrt_call_fn = function(source)
             extended = "Extended information not provided.",
             hash = tostring(item.id)
         }
-        sqrt_log:insert_data(record)
+        sq_log:insert_data(record)
     end
 end

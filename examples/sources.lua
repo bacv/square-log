@@ -27,11 +27,11 @@ local coffee_sources = {
     }
 }
 
--- A global function that the sqrt-log will call to gather sources
+-- A global function that the square-log will call to gather sources
 -- per plugin when loading.
 -- The table has to have a plugin name as key and the list of sources
 -- as the value.
-function sqrt_sources_fn()
+function sq_sources_fn()
     print("hello from sources")
     return {
         wines = wine_sources,
