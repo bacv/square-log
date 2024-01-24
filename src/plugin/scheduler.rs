@@ -1,22 +1,21 @@
 use std::time::Instant;
 
-use super::source::Source;
+use super::registry::PluginRegistry;
 
-#[derive(Default)]
 pub struct Scheduler {
-    sources: Vec<Source>,
+    registry: PluginRegistry,
 }
 
 impl Scheduler {
-    pub fn new(sources: Vec<Source>) -> Self {
-        Self { sources }
+    pub fn new(registry: PluginRegistry) -> Self {
+        Self { registry }
     }
 
     pub async fn spawn(&mut self) {
         loop {
             let mut next_run = None;
 
-            for source in &mut self.sources {
+            for source in self.registry.sources.iter_mut() {
                 if source.should_run() {
                     source.run().await;
                 }
@@ -36,4 +35,3 @@ impl Scheduler {
         }
     }
 }
-

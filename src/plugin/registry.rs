@@ -2,6 +2,8 @@ use std::{fs, path::Path, sync::Arc, time::Duration};
 
 use mlua::{Function, Lua, LuaSerdeExt, Result, Table};
 
+use crate::db::Database;
+
 use super::{
     api::Api, source::Source, PluginConfig, LUA_SOURCES_FN, LUA_SOURCES_VAR, RUST_API_GLOBAL_NAME,
 };
@@ -13,8 +15,11 @@ pub struct PluginRegistry {
 }
 
 impl PluginRegistry {
-    pub fn new(config: PluginConfig) -> Result<Self> {
-        let api = Arc::new(Api);
+    pub fn new<DB>(config: PluginConfig, db: Arc<DB>) -> Result<Self>
+    where
+        DB: Database + Send + Sync + 'static,
+    {
+        let api = Arc::new(Api::new(Arc::new(db)));
         let rt = Lua::new();
         let script = fs::read_to_string(config.sources)?;
         rt.load(script).exec()?;
@@ -34,6 +39,7 @@ impl PluginRegistry {
                 let (_, source_table) = source?;
                 let source_rt = Lua::new();
 
+                // TODO: Plugin script is reaad from file multiple times.
                 load_plugin(&source_rt, plugin.to_str()?, &config.directory, &api)?;
                 let source = load_source(source_rt, source_table)?;
 
@@ -65,7 +71,12 @@ fn load_source(rt: Lua, source_table: Table) -> Result<Source> {
     Ok(source)
 }
 
-fn load_plugin(rt: &Lua, name: &str, directory: &Path, api: &Arc<Api>) -> Result<()> {
+fn load_plugin<DB: Database + Send + Sync + 'static>(
+    rt: &Lua,
+    name: &str,
+    directory: &Path,
+    api: &Arc<Api<Arc<DB>>>,
+) -> Result<()> {
     let plugin_path = directory.join(format!("{name}.lua"));
     let script = fs::read_to_string(plugin_path)?;
 

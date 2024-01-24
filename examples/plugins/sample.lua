@@ -17,10 +17,21 @@ local function print_r(t, indent)
 	end
 end
 
+local record = {
+	date = "2024-01-22",
+	title = "Example Title",
+	description = "This is a sample description.",
+	tags = { "tag1", "tag2", "tag3" },
+	link = "https://example.com",
+	extended = "Extended information here.",
+	hash = "abc123hash"
+}
+
 sqrt_call_fn = function(source)
-	-- This returns a lot of items
+	print_r(source)
 	-- print_r(sqrt_log:fetch_json(source.url))
 	local res = sqrt_log:fetch_json(source.url)
-	print_r(source)
+	record.date = os.date("%Y-%m-%d")
+	sqrt_log:insert_data(record)
 	print()
 end

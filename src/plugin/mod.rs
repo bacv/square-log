@@ -16,6 +16,7 @@ const LUA_SOURCES_VAR: &str = "sqrt_sources_var";
 // Functions available from rust to lua via RUST_API_GLOBAL_NAME.
 const RUST_API_GLOBAL_NAME: &str = "sqrt_log";
 const RUST_API_FETCH_JSON_FN: &str = "fetch_json";
+const RUST_API_INSERT_REC_FN: &str = "insert_data";
 
 #[derive(Deserialize, Debug, Clone, Serialize)]
 pub struct PluginConfig {
