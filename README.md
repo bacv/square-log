@@ -21,10 +21,10 @@
   
   As of now, these are the short term tasks to be done:  
   - [x] - Scaffold `mlua` integration
-  - [ ] - Minimal plugin api definition
+  - [x] - Minimal plugin api definition
   - [ ] - `Sled` database integration
-  - [ ] - Scheduler for pull tasks
+  - [x] - Scheduler for pull tasks
   - [ ] - Http API
-  - [ ] - Pull checkpoint persistence
+  - [x] - ~~Pull checkpoint persistence~~ (lastest record)
   - [ ] - Github Lua plugin
   - [ ] - JS library
