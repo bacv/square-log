@@ -39,8 +39,10 @@ async fn main() -> Result<()> {
     // Start http api.
     let http_task = tokio::spawn(async move {
         loop {
-            let recs = db.get_latest("sample".into());
-            println!("{recs:?}");
+            let wine = db.get_latest("https://api.sampleapis.com/wines/whites".into());
+            println!("{wine:?}");
+            let coffee = db.get_latest("https://api.sampleapis.com/coffee/hot".into());
+            println!("{coffee:?}");
             tokio::time::sleep(Duration::from_secs(1)).await;
         }
     });

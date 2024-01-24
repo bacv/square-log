@@ -19,7 +19,6 @@ impl PluginRegistry {
     where
         DB: Database + Send + Sync + 'static,
     {
-        let api = Arc::new(Api::new(Arc::new(db)));
         let rt = Lua::new();
         let script = fs::read_to_string(config.sources)?;
         rt.load(script).exec()?;
@@ -38,10 +37,11 @@ impl PluginRegistry {
             for source in source_list.pairs::<mlua::Value, mlua::Table>() {
                 let (_, source_table) = source?;
                 let source_rt = Lua::new();
-
-                // TODO: Plugin script is reaad from file multiple times.
-                load_plugin(&source_rt, plugin.to_str()?, &config.directory, &api)?;
                 let source = load_source(source_rt, source_table)?;
+
+                let api = Arc::new(Api::new(Arc::new(db.clone()), source.url.clone()));
+                // TODO: Plugin script is reaad from file multiple times.
+                load_plugin(&source.rt, plugin.to_str()?, &config.directory, &api)?;
 
                 sources.push(source);
             }
@@ -71,12 +71,10 @@ fn load_source(rt: Lua, source_table: Table) -> Result<Source> {
     Ok(source)
 }
 
-fn load_plugin<DB: Database + Send + Sync + 'static>(
-    rt: &Lua,
-    name: &str,
-    directory: &Path,
-    api: &Arc<Api<Arc<DB>>>,
-) -> Result<()> {
+fn load_plugin<DB>(rt: &Lua, name: &str, directory: &Path, api: &Arc<Api<Arc<DB>>>) -> Result<()>
+where
+    DB: Database + Send + Sync + 'static,
+{
     let plugin_path = directory.join(format!("{name}.lua"));
     let script = fs::read_to_string(plugin_path)?;
 

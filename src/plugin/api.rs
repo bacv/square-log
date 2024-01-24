@@ -7,11 +7,12 @@ use crate::{db::Database, record::DataRecord, CLIENT};
 
 pub struct Api<DB> {
     db: Arc<DB>,
+    source: String,
 }
 
 impl<DB> Api<DB> {
-    pub fn new(db: Arc<DB>) -> Self {
-        Self { db }
+    pub fn new(db: Arc<DB>, source: String) -> Self {
+        Self { db, source }
     }
 }
 
@@ -32,8 +33,8 @@ impl<DB: Database + 'static> UserData for Api<Arc<DB>> {
         );
 
         methods.add_method(RUST_API_INSERT_REC_FN, |_, api, data: DataRecord| {
-            // TODO: Return failure result back to lua.
-            let _ = api.db.insert("sample".into(), data.hash.clone(), data);
+            // TODO: Return Err() result back to lua.
+            let _ = api.db.insert(api.source.clone(), data.hash.clone(), data);
             Ok(())
         });
     }
