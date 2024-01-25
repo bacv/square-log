@@ -22,6 +22,7 @@ impl HttpServer {
         let router = Router::new()
             .route("/latest/:source", get(get_latest::<DB>))
             .route("/filter/:source", get(get_range::<DB>))
+            .route("/sources/:source/:id", get(get_record::<DB>))
             .route("/sources", get(get_sources::<DB>))
             .layer(axum::extract::Extension(db));
         Self { config, router }
@@ -57,4 +58,12 @@ async fn get_sources<DB: Database>(
 ) -> Json<Vec<String>> {
     let result = db.get_sources();
     Json(result.unwrap_or_else(|_| Vec::new()))
+}
+
+async fn get_record<DB: Database>(
+    axum::extract::Path((source, idx)): axum::extract::Path<(String, usize)>,
+    axum::extract::Extension(db): axum::extract::Extension<Arc<DB>>,
+) -> Json<Option<DataRecord>> {
+    let result = db.get(&source, idx);
+    Json(result.unwrap_or(None))
 }

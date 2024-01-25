@@ -2,6 +2,7 @@ use mlua::{FromLua, Lua, Result as LuaResult, Table, UserData, Value};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct DataRecord {
+    pub id: Option<usize>,
     pub title: String,
     pub description: String,
     pub tags: Vec<String>,
@@ -28,6 +29,7 @@ impl<'lua> FromLua<'lua> for DataRecord {
         };
 
         Ok(DataRecord {
+            id: None, // Overriden by the db.
             title: table.get("title").or_else(default_str("title"))?,
             description: table
                 .get("description")

@@ -34,7 +34,7 @@ impl<DB: Database + 'static> UserData for Api<Arc<DB>> {
 
         methods.add_method(RUST_API_INSERT_REC_FN, |_, api, data: DataRecord| {
             // TODO: Return Err() result back to lua.
-            let _ = api.db.insert(&api.source, data.hash.clone(), data);
+            let _ = api.db.insert(&api.source, data);
             Ok(())
         });
     }

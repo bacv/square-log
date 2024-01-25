@@ -18,8 +18,8 @@ pub struct Range {
 }
 
 pub trait Database {
-    fn insert(&self, source: &str, key: String, record: DataRecord) -> Result<(), String>;
-    fn get(&self, source: &str, key: String) -> Result<Option<DataRecord>, String>;
+    fn insert(&self, source: &str, record: DataRecord) -> Result<(), String>;
+    fn get(&self, source: &str, idx: usize) -> Result<Option<DataRecord>, String>;
     fn get_latest(&self, source: &str) -> Result<Option<DataRecord>, String>;
     fn get_range(&self, source: &str, range: Range) -> Result<Vec<DataRecord>, String>;
     fn get_sources(&self) -> Result<Vec<String>, String>;

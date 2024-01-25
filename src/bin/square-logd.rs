@@ -23,7 +23,7 @@ async fn main() -> Result<()> {
     let config = serde_yaml::from_reader::<_, Config>(std::fs::File::open(config)?)?;
 
     // Initialize database.
-    let db = Arc::new(MockDatabase::new());
+    let db = Arc::new(MockDatabase::new(config.db));
 
     // Load plugins and sources configs.
     let plugin_registry = PluginRegistry::new(config.plugins, db.clone())?;
