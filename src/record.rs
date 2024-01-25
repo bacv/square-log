@@ -1,15 +1,15 @@
-use chrono::{NaiveDate, ParseError};
 use mlua::{FromLua, Lua, Result as LuaResult, Table, UserData, Value};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct DataRecord {
-    pub date: NaiveDate,
     pub title: String,
     pub description: String,
     pub tags: Vec<String>,
     pub link: String,
     pub extended: String,
     pub hash: String,
+    pub origin_timestamp: i64,
+    pub pull_timestamp: i64,
 }
 
 impl UserData for DataRecord {}
@@ -23,29 +23,11 @@ impl<'lua> FromLua<'lua> for DataRecord {
                     from: value.type_name(),
                     to: "DataRecord",
                     message: Some("expected a table".to_string()),
-                })
+                });
             }
         };
 
-        let date_str: String =
-            table
-                .get("date")
-                .map_err(|_| mlua::Error::FromLuaConversionError {
-                    from: "nil or not a string",
-                    to: "String",
-                    message: Some("field 'date' is missing or invalid".to_string()),
-                })?;
-        let date: NaiveDate =
-            NaiveDate::parse_from_str(&date_str, "%Y-%m-%d").map_err(|e: ParseError| {
-                mlua::Error::FromLuaConversionError {
-                    from: "String",
-                    to: "NaiveDate",
-                    message: Some(format!("error parsing date: {}", e)),
-                }
-            })?;
-
         Ok(DataRecord {
-            date,
             title: table.get("title").or_else(default_str("title"))?,
             description: table
                 .get("description")
@@ -54,6 +36,8 @@ impl<'lua> FromLua<'lua> for DataRecord {
             link: table.get("link").or_else(default_str("link"))?,
             extended: table.get("extended").or_else(default_str("extended"))?,
             hash: table.get("hash").or_else(default_str("hash"))?,
+            origin_timestamp: table.get("origin_timestamp").unwrap_or(0),
+            pull_timestamp: table.get("pull_timestamp").unwrap_or(0),
         })
     }
 }

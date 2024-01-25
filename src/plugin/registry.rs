@@ -39,7 +39,7 @@ impl PluginRegistry {
                 let source_rt = Lua::new();
                 let source = load_source(source_rt, source_table)?;
 
-                let api = Arc::new(Api::new(Arc::new(db.clone()), source.url.clone()));
+                let api = Arc::new(Api::new(Arc::new(db.clone()), source.id.clone()));
                 // TODO: Plugin script is reaad from file multiple times.
                 load_plugin(&source.rt, plugin.to_str()?, &config.directory, &api)?;
 
@@ -53,8 +53,8 @@ impl PluginRegistry {
 
 fn load_source(rt: Lua, source_table: Table) -> Result<Source> {
     // Parse mandatory fields of the source definition on lua side.
-    let url: String = source_table
-        .get("url")
+    let id: String = source_table
+        .get("id")
         .map_err(|_| mlua::Error::RuntimeError("Failed to get 'url' from source".to_string()))?;
     let interval: Duration = source_table
         .get::<_, String>("interval")
@@ -67,7 +67,7 @@ fn load_source(rt: Lua, source_table: Table) -> Result<Source> {
     let json = serde_json::to_value(source_table).expect("Should serialize to JSON");
     rt.globals().set(LUA_SOURCES_VAR, rt.to_value(&json)?)?;
 
-    let source = Source::new(url, interval, rt);
+    let source = Source::new(id, interval, rt);
     Ok(source)
 }
 

@@ -8,16 +8,16 @@ use mlua::{Function, Lua, Value};
 use super::{LUA_PLUGIN_CALL_FN, LUA_SOURCES_VAR};
 
 pub struct Source {
-    pub url: String,
+    pub id: String,
     pub interval: Duration,
     pub next_run: Instant,
     pub rt: Lua,
 }
 
 impl Source {
-    pub fn new(url: String, interval: Duration, rt: Lua) -> Self {
+    pub fn new(id: String, interval: Duration, rt: Lua) -> Self {
         Self {
-            url,
+            id,
             interval,
             rt,
             next_run: Instant::now().add(interval),

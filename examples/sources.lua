@@ -1,29 +1,33 @@
 -- Example sample plugin configuration.
 local sample_config = {
     secret_key = "sample_secret_key",
+    badge_url = "http://dud.dud",
 }
 
 -- A sample plugin sources. Every plugin is free to define what data
 -- needs to be provided per entry.
--- `url` and `interval` are mandatory fields for every source of any plugin.
+-- `id` and `interval` are mandatory fields for every source of any plugin.
 local wine_sources = {
     {
-        url = "https://api.sampleapis.com/wines/reds",
+        id = "red_wines",
         interval = "10s",
+        url = "https://api.sampleapis.com/wines/reds",
         config = sample_config,
     },
     {
-        url = "https://api.sampleapis.com/wines/whites",
+        id = "white_wines",
         interval = "10s",
+        url = "https://api.sampleapis.com/wines/whites",
         config = sample_config,
     },
 }
 
 local coffee_sources = {
     {
-        url = "https://api.sampleapis.com/coffee/hot",
+        id = "hot_coffees",
         interval = "20s",
-        config = sample_config,
+        url = "https://api.sampleapis.com/coffee/hot",
+        token = "auth_token",
     }
 }
 

@@ -20,8 +20,8 @@ impl HttpServer {
         DB: Database + Send + Sync + 'static,
     {
         let router = Router::new()
-            .route("/:source/latest", get(get_latest::<DB>))
-            .route("/:source/filter", get(get_range::<DB>))
+            .route("/latest/:source", get(get_latest::<DB>))
+            .route("/filter/:source", get(get_range::<DB>))
             .route("/sources", get(get_sources::<DB>))
             .layer(axum::extract::Extension(db));
         Self { config, router }
