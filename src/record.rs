@@ -1,7 +1,7 @@
 use chrono::{NaiveDate, ParseError};
 use mlua::{FromLua, Lua, Result as LuaResult, Table, UserData, Value};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct DataRecord {
     pub date: NaiveDate,
     pub title: String,

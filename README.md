@@ -24,7 +24,7 @@
   - [x] - Minimal plugin api definition
   - [ ] - `Sled` database integration
   - [x] - Scheduler for pull tasks
-  - [ ] - Http API
+  - [x] - Http API
   - [x] - ~~Pull checkpoint persistence~~ (lastest record)
   - [ ] - Github Lua plugin
   - [ ] - JS library

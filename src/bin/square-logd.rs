@@ -1,10 +1,11 @@
-use std::{path::PathBuf, sync::Arc, time::Duration};
+use std::{path::PathBuf, sync::Arc};
 
 use clap::Parser;
 use color_eyre::eyre::Result;
 use square_log::{
     config::Config,
-    db::{mock::MockDatabase, Database},
+    db::mock::MockDatabase,
+    http::axum::HttpServer,
     plugin::{registry::PluginRegistry, scheduler::Scheduler},
 };
 use tokio::task::LocalSet;
@@ -29,26 +30,22 @@ async fn main() -> Result<()> {
 
     let mut scheduler = Scheduler::new(plugin_registry);
 
+    let server = HttpServer::new(config.http, db);
+
     // To have async api functions exposed to lua side (lua.call_async), source runtimes need to be
     // executed in the same thread.
-    let local = LocalSet::new();
-    local.spawn_local(async move {
+    let scheduler_task = LocalSet::new();
+    scheduler_task.spawn_local(async move {
         scheduler.spawn().await;
     });
 
     // Start http api.
     let http_task = tokio::spawn(async move {
-        loop {
-            let wine = db.get_latest("https://api.sampleapis.com/wines/whites".into());
-            println!("{wine:?}");
-            let coffee = db.get_latest("https://api.sampleapis.com/coffee/hot".into());
-            println!("{coffee:?}");
-            tokio::time::sleep(Duration::from_secs(1)).await;
-        }
+        let _ = server.serve().await;
     });
 
     tokio::select! {
-        _ = local => {
+        _ = scheduler_task => {
             eprintln!("Local task completed");
         }
         _ = http_task => {
