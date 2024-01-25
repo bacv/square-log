@@ -1,6 +1,6 @@
 print("Initializing wines plugin")
 
-sq_call_fn = function(source)
+sq_pull_fn = function(source)
     local res = sq_log:fetch_json(source.url)
     for _, item in ipairs(res) do
         local record = {

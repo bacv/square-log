@@ -8,7 +8,7 @@ pub mod scheduler;
 mod source;
 
 // Functions expected to be available from lua site to rust.
-const LUA_PLUGIN_CALL_FN: &str = "sq_call_fn";
+const LUA_PLUGIN_CALL_FN: &str = "sq_pull_fn";
 // Function tha returns a list of sources for plugins.
 const LUA_SOURCES_FN: &str = "sq_sources_fn";
 const LUA_SOURCES_VAR: &str = "sq_sources_var";

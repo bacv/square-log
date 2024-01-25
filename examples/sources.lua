@@ -36,7 +36,7 @@ local coffee_sources = {
 -- The table has to have a plugin name as key and the list of sources
 -- as the value.
 function sq_sources_fn()
-    print("hello from sources")
+    print("Initializing sources")
     return {
         wines = wine_sources,
         coffees = coffee_sources,
