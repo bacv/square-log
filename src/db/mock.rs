@@ -5,6 +5,8 @@ use crate::db::{Database, DbConfig, Range};
 use crate::plugin::source::SourceSummary;
 use crate::record::DataRecord;
 
+const DEFAULT_LIMIT: usize = 10;
+
 pub struct MockDatabase {
     records: Arc<RwLock<HashMap<String, Vec<DataRecord>>>>,
     indices: Arc<RwLock<HashMap<String, usize>>>,
@@ -35,14 +37,12 @@ impl Database for MockDatabase {
 
     fn get_range(&self, source: &str, range: Range) -> Result<Vec<DataRecord>, String> {
         let records = self.records.read().unwrap();
-        let start = range.from.unwrap_or(0);
-        let end = range.to.unwrap_or(start + 10);
-
-        Ok(records
-            .get(source)
-            .map_or(Vec::new(), |v| v[start..end.min(v.len())].to_vec()))
+        Ok(records.get(source).map_or(Vec::new(), |v| {
+            let oldest_idx = range.from.unwrap_or(v.len() - DEFAULT_LIMIT);
+            let latest_idx = range.to.unwrap_or(v.len());
+            v[oldest_idx..latest_idx.min(v.len())].to_vec()
+        }))
     }
-
     fn get_sources(&self) -> Result<Vec<SourceSummary>, String> {
         let records = self.records.read().unwrap();
         Ok(records
