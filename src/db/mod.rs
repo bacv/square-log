@@ -2,7 +2,7 @@ use std::{path::PathBuf, result::Result};
 
 use serde::{Deserialize, Serialize};
 
-use crate::record::DataRecord;
+use crate::{plugin::source::SourceSummary, record::DataRecord};
 
 pub mod mock;
 
@@ -19,8 +19,7 @@ pub struct Range {
 
 pub trait Database {
     fn insert(&self, source: &str, record: DataRecord) -> Result<(), String>;
-    fn get(&self, source: &str, idx: usize) -> Result<Option<DataRecord>, String>;
-    fn get_latest(&self, source: &str) -> Result<Option<DataRecord>, String>;
     fn get_range(&self, source: &str, range: Range) -> Result<Vec<DataRecord>, String>;
-    fn get_sources(&self) -> Result<Vec<String>, String>;
+    fn get_source(&self, source: &str) -> Result<Option<SourceSummary>, String>;
+    fn get_sources(&self) -> Result<Vec<SourceSummary>, String>;
 }

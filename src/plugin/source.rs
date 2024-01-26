@@ -5,7 +5,15 @@ use std::{
 
 use mlua::{Function, Lua, Value};
 
+use crate::record::DataRecord;
+
 use super::{LUA_PLUGIN_CALL_FN, LUA_SOURCES_VAR};
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct SourceSummary {
+    pub id: String,
+    pub latest: Option<DataRecord>,
+}
 
 pub struct Source {
     pub id: String,

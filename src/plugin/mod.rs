@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 mod api;
 pub mod registry;
 pub mod scheduler;
-mod source;
+pub mod source;
 
 // Functions expected to be available from lua site to rust.
 const LUA_PLUGIN_CALL_FN: &str = "sq_pull_fn";

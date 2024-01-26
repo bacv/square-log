@@ -4,6 +4,7 @@ use axum::{routing::get, Json, Router};
 
 use crate::{
     db::{Database, Range},
+    plugin::source::SourceSummary,
     record::DataRecord,
 };
 
@@ -20,10 +21,9 @@ impl HttpServer {
         DB: Database + Send + Sync + 'static,
     {
         let router = Router::new()
-            .route("/latest/:source", get(get_latest::<DB>))
-            .route("/filter/:source", get(get_range::<DB>))
-            .route("/sources/:source/:id", get(get_record::<DB>))
             .route("/sources", get(get_sources::<DB>))
+            .route("/sources/:source", get(get_source::<DB>))
+            .route("/sources/:source/range", get(get_range::<DB>))
             .layer(axum::extract::Extension(db));
         Self { config, router }
     }
@@ -34,14 +34,6 @@ impl HttpServer {
             .expect("Should be able to listen on port");
         axum::serve(listener, self.router).await.map_err(Into::into)
     }
-}
-
-async fn get_latest<DB: Database>(
-    axum::extract::Path(source): axum::extract::Path<String>,
-    axum::extract::Extension(db): axum::extract::Extension<Arc<DB>>,
-) -> Json<Option<DataRecord>> {
-    let result = db.get_latest(&source);
-    Json(result.unwrap_or(None))
 }
 
 async fn get_range<DB: Database>(
@@ -55,15 +47,15 @@ async fn get_range<DB: Database>(
 
 async fn get_sources<DB: Database>(
     axum::extract::Extension(db): axum::extract::Extension<Arc<DB>>,
-) -> Json<Vec<String>> {
+) -> Json<Vec<SourceSummary>> {
     let result = db.get_sources();
     Json(result.unwrap_or_else(|_| Vec::new()))
 }
 
-async fn get_record<DB: Database>(
-    axum::extract::Path((source, idx)): axum::extract::Path<(String, usize)>,
+async fn get_source<DB: Database>(
+    axum::extract::Path(source): axum::extract::Path<String>,
     axum::extract::Extension(db): axum::extract::Extension<Arc<DB>>,
-) -> Json<Option<DataRecord>> {
-    let result = db.get(&source, idx);
+) -> Json<Option<SourceSummary>> {
+    let result = db.get_source(&source);
     Json(result.unwrap_or(None))
 }
