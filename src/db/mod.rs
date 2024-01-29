@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::{plugin::source::SourceSummary, record::DataRecord};
 
 pub mod mock;
+pub mod sled;
 
 #[derive(Deserialize, Debug, Clone, Serialize)]
 pub struct DbConfig {

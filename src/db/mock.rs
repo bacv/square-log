@@ -43,6 +43,7 @@ impl Database for MockDatabase {
             v[oldest_idx..latest_idx.min(v.len())].to_vec()
         }))
     }
+
     fn get_sources(&self) -> Result<Vec<SourceSummary>, String> {
         let records = self.records.read().unwrap();
         Ok(records

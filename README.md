@@ -22,7 +22,7 @@
   As of now, these are the short term tasks to be done:  
   - [x] - Scaffold `mlua` integration
   - [x] - Minimal plugin api definition
-  - [ ] - `Sled` database integration
+  - [x] - `Sled` database integration
   - [x] - Scheduler for pull tasks
   - [x] - Http API
   - [x] - ~~Pull checkpoint persistence~~ (lastest record)

@@ -4,7 +4,7 @@ use clap::Parser;
 use color_eyre::eyre::Result;
 use square_log::{
     config::Config,
-    db::mock::MockDatabase,
+    db::sled::SledDatabase,
     http::axum::HttpServer,
     plugin::{registry::PluginRegistry, scheduler::Scheduler},
 };
@@ -23,7 +23,7 @@ async fn main() -> Result<()> {
     let config = serde_yaml::from_reader::<_, Config>(std::fs::File::open(config)?)?;
 
     // Initialize database.
-    let db = Arc::new(MockDatabase::new(config.db));
+    let db = Arc::new(SledDatabase::new(config.db)?);
 
     // Load plugins and sources configs.
     let plugin_registry = PluginRegistry::new(config.plugins, db.clone())?;
