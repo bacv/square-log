@@ -17,6 +17,7 @@ const LUA_SOURCES_VAR: &str = "sq_sources_var";
 const RUST_API_GLOBAL_NAME: &str = "sq_log";
 const RUST_API_FETCH_JSON_FN: &str = "fetch_json";
 const RUST_API_INSERT_REC_FN: &str = "insert_data";
+const RUST_API_GET_LATEST_FN: &str = "get_latest";
 
 #[derive(Deserialize, Debug, Clone, Serialize)]
 pub struct PluginConfig {

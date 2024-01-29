@@ -39,9 +39,9 @@ impl PluginRegistry {
                 let source_rt = Lua::new();
                 let source = load_source(source_rt, source_table)?;
 
-                let api = Arc::new(Api::new(Arc::new(db.clone()), source.id.clone()));
+                let api = Api::new(db.clone(), source.id.clone());
                 // TODO: Plugin script is reaad from file multiple times.
-                load_plugin(&source.rt, plugin.to_str()?, &config.directory, &api)?;
+                load_plugin(&source.rt, plugin.to_str()?, &config.directory, api)?;
 
                 sources.push(source);
             }
@@ -62,7 +62,6 @@ fn load_source(rt: Lua, source_table: Table) -> Result<Source> {
         .map_err(|_| {
             mlua::Error::RuntimeError("Failed to get 'interval' from source".to_string())
         })?;
-
     // TODO: refactor so that there is no need for state copies between rt instances.
     let json = serde_json::to_value(source_table).expect("Should serialize to JSON");
     rt.globals().set(LUA_SOURCES_VAR, rt.to_value(&json)?)?;
@@ -71,7 +70,7 @@ fn load_source(rt: Lua, source_table: Table) -> Result<Source> {
     Ok(source)
 }
 
-fn load_plugin<DB>(rt: &Lua, name: &str, directory: &Path, api: &Arc<Api<Arc<DB>>>) -> Result<()>
+fn load_plugin<DB>(rt: &Lua, name: &str, directory: &Path, api: Api<DB>) -> Result<()>
 where
     DB: Database + Send + Sync + 'static,
 {
@@ -79,7 +78,7 @@ where
     let script = fs::read_to_string(plugin_path)?;
 
     rt.load(&script).exec()?;
-    rt.globals().set(RUST_API_GLOBAL_NAME, api.clone())?;
+    rt.globals().set(RUST_API_GLOBAL_NAME, api)?;
 
     Ok(())
 }
