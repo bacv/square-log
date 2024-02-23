@@ -19,12 +19,13 @@ impl PluginRegistry {
     where
         DB: Database + Send + Sync + 'static,
     {
-        let rt = Lua::new();
+        // Lua runtime for loading sources, won't be used after initialization.
+        let init_rt = Lua::new();
         let script = fs::read_to_string(config.sources)?;
-        rt.load(script).exec()?;
+        init_rt.load(script).exec()?;
 
         // Retrieve the global function defined in Lua.
-        let sources_fn: Function = rt
+        let sources_fn: Function = init_rt
             .globals()
             .get(LUA_SOURCES_FN)
             .map_err(|_| mlua::Error::RuntimeError("Failed to get global function".to_string()))?;
