@@ -1,3 +1,6 @@
 /db
 /target
 Cargo.lock
+
+config.yaml
+sources.lua
