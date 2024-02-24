@@ -14,33 +14,115 @@ local function parseGitHubTimestamp(timestamp)
     return os.time(parsedTime)
 end
 
-local function convertEventToRecord(event)
+local function convertEventToRecords(event)
+    local records = {}
+    local title = ""
     local tags = { event.type }
+    local description = event.repo.name
+    local link = event.repo.url
+    local hash = tostring(event.id)
+    local origin_timestamp = parseGitHubTimestamp(event.created_at)
+    local pull_timestamp = os.time()
 
-    if event.type == "PullRequestEvent" then
+    if event.type == "PushEvent" then
+        for _, commit in ipairs(event.payload.commits) do
+            title = commit.message
+            table.insert(tags, "Commit")
+            local record = {
+                title = title,
+                description = description,
+                tags = tags,
+                link = commit.url,
+                extended = {},
+                hash = tostring(commit.sha),
+                origin_timestamp = origin_timestamp,
+                pull_timestamp = pull_timestamp,
+            }
+            table.insert(records, record)
+        end
+    elseif event.type == "PullRequestEvent" then
+        title = "PR: " .. event.payload.pull_request.title
         table.insert(tags, "Pull Request")
-        table.insert(tags, event.payload.action) -- "opened", "closed"
+        table.insert(tags, event.payload.action) -- e.g. "opened", "closed"
+        local record = {
+            title = title,
+            description = description,
+            tags = tags,
+            link = event.payload.pull_request.html_url,
+            extended = {},
+            hash = hash,
+            origin_timestamp = origin_timestamp,
+            pull_timestamp = pull_timestamp,
+        }
+        table.insert(records, record)
     elseif event.type == "IssueCommentEvent" then
+        title = "Comment on Issue: " .. event.payload.issue.title
         table.insert(tags, "Comment")
         table.insert(tags, "Issue")
+        local record = {
+            title = title,
+            description = description,
+            tags = tags,
+            link = event.payload.comment.html_url,
+            extended = {},
+            hash = hash,
+            origin_timestamp = origin_timestamp,
+            pull_timestamp = pull_timestamp,
+        }
+        table.insert(records, record)
     elseif event.type == "PullRequestReviewCommentEvent" then
+        title = "Review Comment on PR: " .. event.payload.pull_request.title
         table.insert(tags, "Review")
         table.insert(tags, "Pull Request")
-    elseif event.type == "CreateEvent" and event.payload.ref_type == "repository" then
-        table.insert(tags, "New Repository")
+        local record = {
+            title = title,
+            description = description,
+            tags = tags,
+            link = event.payload.comment.html_url,
+            extended = {},
+            hash = hash,
+            origin_timestamp = origin_timestamp,
+            pull_timestamp = pull_timestamp,
+        }
+        table.insert(records, record)
+    elseif event.type == "CreateEvent" then
+        local ref_type = event.payload.ref_type or ""
+        local ref = event.payload.ref or ""
+
+        title = "Created " .. ref_type .. ": " .. ref
+        table.insert(tags, "Create")
+        if ref_type ~= nil then
+            table.insert(tags, event.payload.ref_type) -- e.g. "branch", "tag"
+        end
+
+        local record = {
+            title = title,
+            description = description,
+            tags = tags,
+            link = link,
+            extended = {},
+            hash = hash,
+            origin_timestamp = origin_timestamp,
+            pull_timestamp = pull_timestamp,
+        }
+        table.insert(records, record)
+    else
+        -- Fallback for unhandled event types.
+        title = event.type .. " by " .. event.actor.login
+        local record = {
+            title = title,
+            description = description,
+            tags = tags,
+            link = link,
+            extended = {},
+            hash = hash,
+            origin_timestamp = origin_timestamp,
+            pull_timestamp = pull_timestamp,
+        }
+        table.insert(records, record)
     end
 
-    local record = {
-        title = event.type .. " by " .. event.actor.login,
-        description = event.repo.name,
-        tags = tags,
-        link = event.repo.url,
-        extended = {},
-        hash = tostring(event.id),
-        origin_timestamp = parseGitHubTimestamp(event.created_at),
-        pull_timestamp = os.time(),
-    }
-    return record
+    return records
 end
 
 local headers = {}
@@ -71,8 +153,11 @@ sq_pull_fn = function(source)
                 break
             end
 
-            local record = convertEventToRecord(event)
-            sq_log.db:insert_data(record)
+            -- One event could have multiple subevents (like commits).
+            local records = convertEventToRecords(event)
+            for _, record in ipairs(records) do
+                sq_log.db:insert_data(record)
+            end
         end
 
         if shouldContinue then
