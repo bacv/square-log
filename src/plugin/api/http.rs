@@ -21,13 +21,14 @@ async fn fetch_json<'lua>(
     (uri, headers): (LuaString<'lua>, Option<Table<'lua>>),
 ) -> Result<Value<'lua>> {
     let req_headers = lua_headers(headers).into_lua_err()?;
+
     let resp = CLIENT
         .get(uri.to_str()?)
         .headers(req_headers)
         .send()
         .await
         .and_then(|resp| resp.error_for_status())
-        .map_err(mlua::Error::external)?; // Adjust error handling
+        .map_err(mlua::Error::external)?;
     let json = resp
         .json::<serde_json::Value>()
         .await

@@ -26,5 +26,5 @@
   - [x] - Scheduler for pull tasks
   - [x] - Http API
   - [x] - ~~Pull checkpoint persistence~~ (lastest record)
-  - [ ] - Github Lua plugin
+  - [x] - Github Lua plugin
   - [ ] - JS library

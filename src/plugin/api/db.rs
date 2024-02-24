@@ -25,14 +25,16 @@ impl<DB: Database> DbApi<DB> {
     }
 
     fn latest<'lua>(&self, lua: &'lua Lua) -> Result<Value<'lua>> {
-        let record = self
+        let maybe_record = self
             .db
             .get_source(&self.source)
             .map_err(mlua::Error::external)
-            .and_then(|maybe_summary| {
-                maybe_summary.map_or_else(|| Ok(None), |summary| Ok(summary.latest))
-            })?;
-        lua.to_value(&record)
+            .map(|maybe_summary| maybe_summary.and_then(|summary| summary.latest))?;
+
+        match maybe_record {
+            Some(record) => lua.to_value(&record),
+            None => Ok(Value::Nil),
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use mlua::{FromLua, Lua, Result as LuaResult, Table, UserData, Value};
+use mlua::{FromLua, Lua, Result as LuaResult, Table, Value};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct DataRecord {
@@ -14,8 +14,6 @@ pub struct DataRecord {
     pub origin_timestamp: i64,
     pub pull_timestamp: i64,
 }
-
-impl UserData for DataRecord {}
 
 impl<'lua> FromLua<'lua> for DataRecord {
     fn from_lua(value: Value, _lua: &Lua) -> LuaResult<Self> {
