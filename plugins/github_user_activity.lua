@@ -86,8 +86,8 @@ local function convertEventToRecords(event)
         }
         table.insert(records, record)
     elseif event.type == "CreateEvent" then
-        local ref_type = event.payload.ref_type or ""
-        local ref = event.payload.ref or ""
+        local ref_type = tostring(event.payload.ref_type) or ""
+        local ref = tostring(event.payload.ref) or ""
 
         title = "Created " .. ref_type .. ": " .. ref
         table.insert(tags, "Create")
@@ -134,7 +134,9 @@ sq_pull_fn = function(source)
     local lastStoredEventId = lastStoredEvent and lastStoredEvent["hash"] or nil
 
     headers["authorization"] = "Bearer" .. auth
-    headers["user-agent"] = "square-log"
+    headers["user-agent"] = source.user_agent
+    headers["accept"] = "application/vnd.github+json"
+    headers["X-GitHub-Api-Version"] = "2022-11-28"
 
     local page = 1
     local shouldContinue = true

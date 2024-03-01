@@ -28,7 +28,7 @@ impl Source {
             id,
             interval,
             rt,
-            next_run: Instant::now().add(interval),
+            next_run: Instant::now(),
         }
     }
 

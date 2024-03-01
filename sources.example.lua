@@ -4,6 +4,7 @@ local github_sources = {
         interval = "1h",
         user = "bacv",
         auth = "auth token",
+        user_agent = "bacv" -- should be the github username.
     }
 }
 
